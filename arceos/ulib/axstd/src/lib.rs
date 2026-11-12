@@ -54,8 +54,14 @@
 extern crate alloc;
 
 #[cfg(feature = "alloc")]
+pub mod collections {
+    pub use alloc::collections::*;
+    pub type HashMap<K, V> = alloc::collections::BTreeMap<K, V>;
+}
+
+#[cfg(feature = "alloc")]
 #[doc(no_inline)]
-pub use alloc::{boxed, collections, format, string, vec};
+pub use alloc::{boxed, format, string, vec};
 
 #[doc(no_inline)]
 pub use core::{arch, cell, cmp, hint, marker, mem, ops, ptr, slice, str};
