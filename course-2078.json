@@ -2,8 +2,8 @@
   "schema": 1,
   "courseId": 2078,
   "repository": "LearningOS/2026a-arceos-kdb17wsl",
-  "commit": "183d9d7444ed7d65af496fd01a6a7eefd304957c",
-  "score": 300,
+  "commit": "abb5d51e81885e4d0755f28e7822a93aad1cf9a8",
+  "score": 400,
   "totalScore": 600,
   "exercises": [
     {
@@ -16,8 +16,8 @@
     {
       "name": "ramfs_rename",
       "max": 100,
-      "score": 0,
-      "status": "fail",
+      "score": 100,
+      "status": "pass",
       "exitCode": 0
     },
     {
@@ -50,9 +50,9 @@
     }
   ],
   "student": "kdb17wsl",
-  "runId": "43147114687",
+  "runId": "43703190146",
   "runAttempt": "1",
   "upload": {
-    "status": "accepted"
+    "status": "pending"
   }
 }
