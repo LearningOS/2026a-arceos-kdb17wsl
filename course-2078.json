@@ -2,8 +2,8 @@
   "schema": 1,
   "courseId": 2078,
   "repository": "LearningOS/2026a-arceos-kdb17wsl",
-  "commit": "abb5d51e81885e4d0755f28e7822a93aad1cf9a8",
-  "score": 400,
+  "commit": "d256f2f45799156fd889a3f56d62e1f4c8890740",
+  "score": 500,
   "totalScore": 600,
   "exercises": [
     {
@@ -37,8 +37,8 @@
     {
       "name": "sys_map",
       "max": 100,
-      "score": 0,
-      "status": "fail",
+      "score": 100,
+      "status": "pass",
       "exitCode": 0
     },
     {
@@ -50,9 +50,9 @@
     }
   ],
   "student": "kdb17wsl",
-  "runId": "43703190146",
+  "runId": "44500767748",
   "runAttempt": "1",
   "upload": {
-    "status": "accepted"
+    "status": "pending"
   }
 }
