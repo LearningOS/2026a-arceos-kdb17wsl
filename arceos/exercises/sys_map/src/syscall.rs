@@ -7,7 +7,9 @@ use axerrno::LinuxError;
 use axtask::current;
 use axtask::TaskExtRef;
 use axhal::paging::MappingFlags;
+use axhal::mem::PAGE_SIZE_4K;
 use arceos_posix_api as api;
+use memory_addr::VirtAddrRange;
 
 const SYS_IOCTL: usize = 29;
 const SYS_OPENAT: usize = 56;
@@ -138,9 +140,26 @@ fn sys_mmap(
     prot: i32,
     flags: i32,
     fd: i32,
-    _offset: isize,
+    offset: isize,
 ) -> isize {
-    unimplemented!("no sys_mmap!");
+    let current = current();
+    let mut aspace = current.task_ext().aspace.lock();
+    let prot = MmapProt::from_bits_truncate(prot);
+
+    let size = (length + PAGE_SIZE_4K - 1) & !(PAGE_SIZE_4K - 1);
+    let limit = VirtAddrRange::from_start_size(aspace.base(), aspace.size());
+    let start = aspace.find_free_area(aspace.base(), size, limit).unwrap();
+    aspace.map_alloc(start, size, MappingFlags::from(prot), true).unwrap();
+
+    if offset != 0 {
+        api::sys_lseek(fd, offset as _, 0);
+    }
+
+    let mut data = alloc::vec![0u8; length];
+    let read_len = api::sys_read(fd, data.as_mut_ptr().cast(), length);
+    aspace.write(start, &data[..read_len as usize]).unwrap();
+
+    start.as_usize() as isize
 }
 
 fn sys_openat(dfd: c_int, fname: *const c_char, flags: c_int, mode: api::ctypes::mode_t) -> isize {
