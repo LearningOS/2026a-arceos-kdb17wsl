@@ -7,7 +7,7 @@ use crate::VM_ENTRY;
 
 pub fn load_vm_image(fname: &str, uspace: &mut AddrSpace) -> io::Result<()> {
     let mut buf = [0u8; 64];
-    load_file(fname, &mut buf)?;
+    let n = load_file(fname, &mut buf)?;
 
     uspace.map_alloc(VM_ENTRY.into(), PAGE_SIZE_4K, MappingFlags::READ|MappingFlags::WRITE|MappingFlags::EXECUTE|MappingFlags::USER, true).unwrap();
 
@@ -22,9 +22,26 @@ pub fn load_vm_image(fname: &str, uspace: &mut AddrSpace) -> io::Result<()> {
         core::ptr::copy_nonoverlapping(
             buf.as_ptr(),
             phys_to_virt(paddr).as_mut_ptr(),
-            PAGE_SIZE_4K,
+            n,
         );
     }
+
+    uspace.map_alloc(0.into(), PAGE_SIZE_4K, MappingFlags::READ|MappingFlags::WRITE|MappingFlags::USER, true).unwrap();
+
+    let (data_paddr, _, _) = uspace
+        .page_table()
+        .query(0.into())
+        .unwrap_or_else(|_| panic!("Mapping failed for guest data page"));
+
+    unsafe {
+        phys_to_virt(data_paddr)
+            .as_mut_ptr()
+            .cast::<u64>()
+            .add(64 / core::mem::size_of::<u64>())
+            .write_unaligned(0x6688);
+    }
+
+    ax_println!("Load vm image ok!");
 
     Ok(())
 }

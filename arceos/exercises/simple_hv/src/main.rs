@@ -45,9 +45,13 @@ fn main() {
     let mut ctx = VmCpuRegisters::default();
     prepare_guest_context(&mut ctx);
 
+    ax_println!("Guest context prepared! sepc: {:#x}", ctx.guest_regs.sepc);
+
     // Setup pagetable for 2nd address mapping.
     let ept_root = uspace.page_table_root();
     prepare_vm_pgtable(ept_root);
+
+    ax_println!("Guest pagetable prepared! ept_root: {:#x}", ept_root);
 
     // Kick off vm and wait for it to exit.
     while !run_guest(&mut ctx) {
@@ -102,10 +106,24 @@ fn vmexit_handler(ctx: &mut VmCpuRegisters) -> bool {
             }
         },
         Trap::Exception(Exception::IllegalInstruction) => {
-            panic!("Bad instruction: {:#x} sepc: {:#x}",
-                stval::read(),
+            let insn = stval::read();
+            ax_println!("VmExit Reason: IllegalInstruction: stval: {:#x} sepc: {:#x}",
+                insn,
                 ctx.guest_regs.sepc
             );
+
+            let csr = insn >> 20 & 0xfff;
+            let rd = insn >> 7 & 0x1f;
+            if csr == 0xf14 && rd == 11 {
+                ctx.guest_regs.gprs.set_reg(A1, 0x1234);
+                ctx.guest_regs.sepc += 4;
+                return false;
+            } else {
+                panic!("Bad instruction: {:#x} sepc: {:#x}",
+                    insn,
+                    ctx.guest_regs.sepc
+                );
+            }
         },
         Trap::Exception(Exception::LoadGuestPageFault) => {
             panic!("LoadGuestPageFault: stval{:#x} sepc: {:#x}",
